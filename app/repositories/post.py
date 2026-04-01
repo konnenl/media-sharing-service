@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.post import Post
 from uuid import uuid4
+import uuid
 
 class PostRepository:
     def __init__(self, session: AsyncSession):
@@ -23,3 +24,15 @@ class PostRepository:
     async def get_all(self) -> list[Post]:
         res = await self.session.execute(select(Post).order_by(Post.created_at.desc()))
         return res.scalars().all()
+    
+    async def delete(self, post_uuid: uuid) -> Post | None:
+        res = await self.session.execute(
+            select(Post).where(Post.id == post_uuid))
+        post = res.scalar_one_or_none()
+
+        if not post:
+            return None
+        
+        await self.session.delete(post)
+        await self.session.commit()
+        return post

@@ -2,10 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.post import PostRepository
 from app.schemas.post import PostCreate
 from app.clients.imagekit import imagekit
-import shutil
-import os
 import uuid
-import tempfile
+from app.core.exceptions import PostNotFoundError, InvalidPostIdError
 
 class PostService:
     def __init__(self, session: AsyncSession):
@@ -36,3 +34,15 @@ class PostService:
     
     async def get_feed(self):
         return await self.repo.get_all()
+    
+    async def delete(self, post_id: str):
+        try:
+            post_uuid = uuid.UUID(post_id)
+        except ValueError:
+            raise InvalidPostIdError
+
+        post = await self.repo.delete(post_uuid)
+        
+        if not post:
+            raise PostNotFoundError
+        return post
