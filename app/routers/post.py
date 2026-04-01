@@ -14,9 +14,7 @@ async def upload_file(
     session: AsyncSession = Depends(get_async_session)
 ):
     post_data = PostCreate(
-        url=f"/test_path/{file.filename}",
-        file_type="video",
-        file_name=file.filename,
+        file=file,
         caption=caption
     )
     service = PostService(session)
