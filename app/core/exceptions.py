@@ -1,14 +1,97 @@
-class PostNotFoundError(Exception):
-    def __init__(self):
-        super().__init__("Post not found")
-    pass
+from typing import Any, Dict, Optional
 
-class InvalidPostIdError(Exception):
-    def __init__(self):
-        super().__init__("Invalid post id")
-    pass
+class AppException(Exception):
+    def __init__(
+        self,
+        message: str,
+        status_code: int = 500,
+        error_code: str = "INTERNAL_ERROR",
+        details: Optional[Dict[str, Any]] = None
+    ):
+        self.message = message
+        self.status_code = status_code
+        self.error_code = error_code
+        self.details = details or {}
+        super().__init__(self.message)
 
-class InvalidRequestError(Exception):
-    def __init__(self):
-        super().__init__("Invalid request")
-    pass
+
+class NotFoundError(AppException):
+    def __init__(
+        self,
+        resource: str,
+        resource_id: Any,
+        message: Optional[str] = None
+    ):
+        super().__init__(
+            message=message or f"{resource} with ID {resource_id} not found",
+            status_code=404,
+            error_code="NOT_FOUND",
+            details={"resource": resource, "resource_id": str(resource_id)}
+        )
+
+
+class ValidationError(AppException):
+    def __init__(
+        self,
+        field: str,
+        message: str,
+        value: Any = None
+    ):
+        super().__init__(
+            message=f"Validation error on field '{field}': {message}",
+            status_code=422,
+            error_code="VALIDATION_ERROR",
+            details={"field": field, "value": str(value) if value else None}
+        )
+
+
+class AuthenticationError(AppException):
+    def __init__(self, message: str = "Authentication required"):
+        super().__init__(
+            message=message,
+            status_code=401,
+            error_code="AUTHENTICATION_ERROR"
+        )
+
+
+class AuthorizationError(AppException):
+    def __init__(
+        self,
+        action: str,
+        resource: str,
+        message: Optional[str] = None
+    ):
+        super().__init__(
+            message=message or f"Not authorized to {action} {resource}",
+            status_code=403,
+            error_code="AUTHORIZATION_ERROR",
+            details={"action": action, "resource": resource}
+        )
+
+
+class ConflictError(AppException):
+    def __init__(
+        self,
+        resource: str,
+        message: Optional[str] = None
+    ):
+        super().__init__(
+            message=message or f"{resource} already exists",
+            status_code=409,
+            error_code="CONFLICT",
+            details={"resource": resource}
+        )
+
+
+class ExternalServiceError(AppException):
+    def __init__(
+        self,
+        service: str,
+        message: Optional[str] = None
+    ):
+        super().__init__(
+            message=message or f"External service '{service}' is unavailable",
+            status_code=503,
+            error_code="SERVICE_UNAVAILABLE",
+            details={"service": service}
+        )
