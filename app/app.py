@@ -7,6 +7,7 @@ import traceback
 from datetime import datetime
 from typing import Any, Dict
 from app.routers.post import router as post_router
+from app.routers.auth import router as auth_router
 from app.core.exceptions import *
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI() 
 
 app.include_router(post_router)
+app.include_router(auth_router)
 
 def create_error_response(
     status_code: int,

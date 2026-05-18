@@ -95,3 +95,16 @@ class ExternalServiceError(AppException):
             error_code="SERVICE_UNAVAILABLE",
             details={"service": service}
         )
+
+class ForbiddenError(AppException):
+    def __init__(
+        self,
+        resource: str,
+        message: Optional[str] = None
+    ):
+        super().__init__(
+            message=message,
+            status_code=403,
+            error_code="FORBIDDEN",
+            details={"resource": resource}
+        )

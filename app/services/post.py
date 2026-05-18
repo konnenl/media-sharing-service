@@ -9,7 +9,7 @@ class PostService:
     def __init__(self, session: AsyncSession):
         self.repo = PostRepository(session)
     
-    async def create_post(self, post_data: PostCreate):
+    async def create_post(self, post_data: PostCreate, user_id):
         file = post_data.file
 
         try:
@@ -26,6 +26,7 @@ class PostService:
         
         file_type = "video" if file.content_type.startswith("video/") else "image"
         return await self.repo.create(
+            user_id=user_id,
             url=upload_res.url,
             file_type=file_type,
             file_name=upload_res.name,
@@ -35,15 +36,18 @@ class PostService:
     async def get_feed(self):
         return await self.repo.get_all()
     
-    async def delete(self, post_id: str):
+    async def delete(self, post_id: str, user_id):
         try:
             post_uuid = uuid.UUID(post_id)
         except ValueError:
             raise ValidationError("post_id", "Invalid UUID", post_id)
 
-        post = await self.repo.delete(post_uuid)
+        post = await self.repo.get_by_id(post_uuid)
         
         if not post:
             raise NotFoundError("Post", post_id)
         
-        return post
+        if post.user_id != user_id:
+            raise ForbiddenError("You can't delete this post")
+
+        await self.repo.delete(post)
