@@ -12,4 +12,4 @@ REST API сервис для управления медиафайлами с а
 
 ## Запуск проекта
 ```bash
-docker compose up --build
+docker compose up
